@@ -18,24 +18,57 @@ def splitdataset(dataset, feature_index):
     if(feature_index ==0):
         print("data index 0 is labels, threfore feature index must greater than 0")
     feature = dataset[:,feature_index]
+    feature_values = list(set(feature))
     sets = {}
-    for i in range(len(feature)):
-        sets[feature[i]] = sets.get(feature[i],[]) + [i]
-    sub_nums = len(sets)
-    subsets = []
-    for key in sets.keys():
-        #temp = dataset[sets[key],:]
-        #print(temp)
-        subsets.append(dataset[sets[key],:])
+    for i in feature_values:
+        sets[i] = dataset[dataset[:,feature_index]==i,:]
+    return sets
 
-    #print(sets)
-    print(subsets)
+def determine_feature(dataset):
+    shannon_v = calcshannon(dataset)
+    num = dataset.shape[0]
+    feature_num =dataset.shape[1]-1
+    shannon_reduce = []
+    for i in range(feature_num):
+        temp_subsets = splitdataset(dataset,i+1)
+        sum_shannon = 0
+        for subset_key in temp_subsets.keys():
+            temp_shannon = calcshannon(temp_subsets[subset_key])
+            prob = temp_subsets[subset_key].shape[0]/float(num)
+            sum_shannon = sum_shannon +prob*temp_shannon
+        shannon_reduce.append(shannon_v - sum_shannon)
+    shannon_array = np.array(shannon_reduce)
+    feature_index = np.argmax(shannon_array)
+    return feature_index +1
 
-#def createtree(dataset):
-    
-dataset = np.array([[1,23,3,1],[3,2,5,2],[3,2,6,2]])
-splitdataset(dataset, 1)
+def majorityC(labellist):
+    label_array = np.array(labellist)
+    minv = np.min(label_array)
+    temp_array = label_array - minv
+    label = np.argmax(np.bincount(temp_array))+minv
+    return label
+
+def createTree(dataset):
+    classlist = [temp[0] for temp in dataset]
+    if(len(set(classlist)) == len(classlist)):
+        return classlist[0]
+    feature_array = dataset[:,1:]
+    if((feature_array == feature_array[0]).all()):
+        return majorityC(classlist)
+    best_feature = determine_feature(dataset)
+    data_sets = splitdataset(dataset,best_feature)
+    dTree = {best_feature:{}}
+    for key in data_sets.keys():
+        dTree[best_feature][key] = createTree(data_sets[key])
+    return dTree
+
+dataset = np.array([[1,1,1],[1,1,1],[0,1,0],[0,0,1],[0,0,1]])
+print(dataset)
+tree = createTree(dataset)
+print(tree)
+#print(aa)
 #shannon_v = calcshannon(dataset)
 #print(shannon_v)
+
  
 
