@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 
 def calcshannon(dataset):
     data_num = dataset.shape[0]
@@ -62,13 +63,21 @@ def createTree(dataset):
         dTree[best_feature][key] = createTree(data_sets[key])
     return dTree
 
-dataset = np.array([[1,1,1],[1,1,1],[0,1,0],[0,0,1],[0,0,1]])
-print(dataset)
-tree = createTree(dataset)
-print(tree)
-#print(aa)
-#shannon_v = calcshannon(dataset)
-#print(shannon_v)
+def storeTree(dTree, filename):
+    fw = open(filename, 'wb')
+    pickle.dump(dTree,fw)
+    fw.close()
 
- 
+def loadTree(filename):
+    fr = open(filename,'rb')
+    return pickle.load(fr) 
+
+dataset = np.array([[1,1,1],[1,1,1],[0,1,0],[0,0,1],[0,0,1]])
+#print(dataset)
+tree = createTree(dataset)
+#print(tree)
+filename = 'test_tree.txt'
+storeTree(tree, filename)
+
+
 
